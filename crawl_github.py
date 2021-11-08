@@ -2,7 +2,7 @@
 from github import Github
 
 # using an access token
-g = Github("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")
+g = Github("access_token")
 
 # repositories = g.search_repositories(query='iot')
 
