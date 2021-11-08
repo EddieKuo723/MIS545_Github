@@ -2,7 +2,7 @@
 from github import Github
 
 # using an access token
-g = Github("access_token")
+g = Github("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")
 
 # repositories = g.search_repositories(query='iot')
 
@@ -25,5 +25,5 @@ for repo in repositories:
 			print(file_content.path)
 
 			# real code in here
-			# print(file_content.decoded_content.decode())
+			print(file_content.decoded_content.decode())
 	break

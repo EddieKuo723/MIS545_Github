@@ -9,7 +9,7 @@ g = Github("access_token")
 # g = Github(base_url="https://{hostname}/api/v3", login_or_token="access_token")
 
 keyword = 'Github'
-keyword_list = ['Python','Java','C','C++','PHP','Go']
+keyword_list = ['Javascript','Python','Java','C','C++','PHP','Go','Typescript']
 
 
 with open(f'{keyword}_most_stars.csv', mode='w', encoding='utf-8-sig', newline='') as csv_file:
