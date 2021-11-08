@@ -36,6 +36,6 @@ with open(f'{keyword}_most_stars.csv', mode='w', encoding='utf-8-sig', newline='
 			# print(repo.description)
 			# print(','.join(repo.get_topics()))
 			w.writerow([keyword, repo.owner.login, repo.name,repo.stargazers_count,repo.forks_count,repo.open_issues_count,repo.network_count,repo.subscribers_count,repo.watchers_count,repo.description,','.join(repo.get_topics())])
-			if q == 49:
+			if q == 99:
 				break
 
