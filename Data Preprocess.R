@@ -62,7 +62,18 @@ githubStar <- githubStar %>%
   mutate(watchersCountScaled = 
            ((watchers_count - min(watchers_count))
             /(max(watchers_count) - min(watchers_count))) * (1 - 0) + 0
-  )
+      )
+
+githubStar <- githubStar%>%
+  mutate(isTarget = 
+           ifelse(
+                    (starsScaled * 0.3 + forksCountScaled * 0.2 + networkCountScaled * 0.2 
+                     + suscribersCountScaled * 0.2 + watchersCountScaled * 0.1 ) >
+                     mean(starsScaled * 0.3 + forksCountScaled * 0.2 + networkCountScaled * 0.2 
+                          + suscribersCountScaled * 0.2 + watchersCountScaled * 0.1),
+                        TRUE,FALSE
+                  )
+         )
 
 
 print(githubStar)
