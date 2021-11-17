@@ -29,7 +29,12 @@ githubStar <- githubStar %>%
       )
 
 githubStar <- githubStar%>%
-  mutate(isTarget = ifelse(stars > median(stars),TRUE,FALSE))
+  mutate(isTarget = 
+           ifelse((stars*0.5 + forks_count*0.3 + subscribers_count * 0.2) >
+                  mean(stars*0.5 + forks_count*0.3+ subscribers_count * 0.2),
+                  TRUE,FALSE))
+
+summary(githubStar)
 
 
 
