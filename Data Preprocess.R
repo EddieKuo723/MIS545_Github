@@ -24,6 +24,19 @@ print(str(githubStar))
 print(summary(githubStar))
 
 
+<<<<<<< HEAD
+=======
+# githubStarStat <- githubStar %>% 
+#   select(stars,forks_count, issue_count,network_count,
+#          subscribers_count, watchers_count
+#       )
+
+# githubStar <- githubStar%>%
+#   mutate(isTarget = 
+#            ifelse((stars*0.5 + forks_count*0.3 + subscribers_count * 0.2) >
+#                   mean(stars*0.5 + forks_count*0.3+ subscribers_count * 0.2),
+#                   TRUE,FALSE))
+>>>>>>> 14e5acc2552acc3f0abb4ce3ca2d4257ca42cd5f
 
 githubStar <- githubStar %>%
   mutate(starsScaled = 
@@ -69,6 +82,7 @@ githubStarMedian <- githubStar%>%
 githubStarMean <- githubStar%>%
   mutate(isTarget = 
            ifelse(
+<<<<<<< HEAD
              (starsScaled * 0.3 + forksCountScaled * 0.2 + networkCountScaled * 0.2 
               + suscribersCountScaled * 0.2 + watchersCountScaled * 0.1 ) >
                mean(starsScaled * 0.3 + forksCountScaled * 0.2 + networkCountScaled * 0.2 
@@ -88,6 +102,18 @@ githubStar %>%
   labs(title = "BoxPlot of Stars V/s Language", x = "Stars", y =
          "Lang")
 
+=======
+                    (starsScaled * 0.3 + forksCountScaled * 0.2 + networkCountScaled * 0.2 
+                     + suscribersCountScaled * 0.2 + watchersCountScaled * 0.1 ) >
+                     median(starsScaled * 0.3 + forksCountScaled * 0.2 + networkCountScaled * 0.2 
+                          + suscribersCountScaled * 0.2 + watchersCountScaled * 0.1),
+                        TRUE,FALSE
+                  )
+         )
+
+
+print(githubStar)
+>>>>>>> 14e5acc2552acc3f0abb4ce3ca2d4257ca42cd5f
 
 # histogram
 githubStar %>%
