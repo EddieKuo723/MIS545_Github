@@ -2,11 +2,12 @@
 
 # Install the required packages
 # install.packages("tidyverse")
+# install.packages("e1071")
 
 
 # Load the tidyverse and neuralnet libraries
-library("tidyverse")
-library(corrplot)
+library(tidyverse)
+library(e1071)
 
 # Set the working directory to your Lab12 folder
 # setwd("C:/Users/user/Documents/GitHub/MIS545_Github_CyberSecurity")
@@ -80,31 +81,58 @@ print(summary(githubStarMean))
 print(summary(githubStarMedian))
 
 
-# boxplot
-githubStar %>%
-  ggplot() +
-  geom_boxplot(mapping = aes(x = stars, y = keyword), fill = "red") +
-  labs(title = "BoxPlot of Stars V/s Language", x = "Stars", y =
-         "Lang")
+githubStarMedian <- githubStarMedian %>% 
+            select( starsScaled, forksCountScaled, 
+                    issue_count, suscribersCountScaled,   isTarget
+            )
 
-                    
-print(githubStar)
+set.seed(154)
 
-# histogram
-githubStar %>%
-  ggplot() +
-  geom_histogram(mapping = aes(x = stars), bins = 30, color = "black", fill = "white") +
-  labs(title = "Histogram of Stars", x = "Stars", y =
-         "Frequency")
+sampleSet <- sample(nrow(githubStarMedian ),
+                    round(nrow(githubStarMedian )*0.75),
+                    replace = FALSE
+)
+# Put 75% sample into training
+githubStarMedianTraining  <- githubStarMedian[sampleSet, ]
 
+summary(githubStarMedianTraining)
 
-# correlation
-githubCorr <- githubStar %>%
-  select(stars, forks_count, issue_count, subscribers_count)
+# Put 25% sample into testing
+githubStarMedianTesting  <- githubStarMedian[-sampleSet, ]
 
-# matrix
-corrMat <- cor(githubCorr)
+# Generate the Naive Bayes model to predict isTarget 
+# based on the other variables in the dataset
+githubStarModel <- naiveBayes(formula = isTarget ~.,
+                            data = githubStarMedianTraining,
+                            lapse = 1)
 
-# correlation matrix display
-corrplot(corrMat, method = 'number')
+# Build probabilities for each record in the testing dataset 
+# and store them in githubStarProbability
+githubStarProbability <- predict(githubStarModel,
+                                 githubStarMedianTesting,
+                                   type = "raw")
+
+# Display githubStarProbability on the console
+print(githubStarProbability)
+
+githubStarPrediction <- predict(githubStarModel,
+                                githubStarMedianTesting,
+                                  type = "class")
+
+# Display githubStarPrediction on the console
+print(githubStarPrediction)
+
+# Evaluate the model by forming a confusion matrix
+githubStarConfusionMatrix <- table(githubStarMedianTesting$isTarget ,
+                                   githubStarPrediction)
+
+# Display the confusion matrix on the console
+print(githubStarConfusionMatrix)
+
+# Calculate the model prediction accuracy 
+predictiveAccuracy <-sum(diag(githubStarConfusionMatrix)
+                         /nrow(githubStarMedianTesting))
+
+# Display the predictive accuracy on the console
+print(predictiveAccuracy)
 
