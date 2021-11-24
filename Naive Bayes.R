@@ -55,13 +55,19 @@ githubStar <- githubStar %>%
             /(max(watchers_count) - min(watchers_count))) * (1 - 0) + 0
       )
 
+githubStar <- githubStar %>%
+  mutate(issueCountScaled = 
+           ((issue_count - min(issue_count))
+            /(max(issue_count) - min(issue_count))) * (1 - 0) + 0
+  )
+
 githubStarMedian <- githubStar%>%
   mutate(isTarget = 
            ifelse(
-             (starsScaled * 0.4 + forksCountScaled * 0.4 
-              + suscribersCountScaled * 0.2  ) >
-               median(starsScaled * 0.4 + forksCountScaled * 0.4
-                      + suscribersCountScaled * 0.2 ),
+             (starsScaled * 0.3 + forksCountScaled * 0.3 
+              + issueCountScaled * 0.2 + suscribersCountScaled * 0.2  ) >
+               median(starsScaled * 0.3 + forksCountScaled * 0.3 
+                      + issueCountScaled * 0.2 + suscribersCountScaled * 0.2 ),
              TRUE,FALSE
            )
   )
@@ -69,10 +75,10 @@ githubStarMedian <- githubStar%>%
 githubStarMean <- githubStar%>%
   mutate(isTarget = 
            ifelse(
-             (starsScaled * 0.4 + forksCountScaled * 0.4  
-              + suscribersCountScaled * 0.2   ) >
-               mean(starsScaled * 0.4 + forksCountScaled * 0.4 
-                    + suscribersCountScaled * 0.2  ),
+             (starsScaled * 0.3 + forksCountScaled * 0.3 
+              + issueCountScaled * 0.2 + suscribersCountScaled * 0.2   ) >
+               mean(starsScaled * 0.3 + forksCountScaled * 0.3  
+                    + issueCountScaled * 0.2  + suscribersCountScaled * 0.2  ),
              TRUE,FALSE
            )
   )
@@ -83,7 +89,7 @@ print(summary(githubStarMedian))
 
 githubStarMedian <- githubStarMedian %>% 
             select( starsScaled, forksCountScaled, 
-                    issue_count, suscribersCountScaled,   isTarget
+                    issueCountScaled, suscribersCountScaled,   isTarget
             )
 
 set.seed(154)
