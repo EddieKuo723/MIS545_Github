@@ -36,11 +36,11 @@ githubStar <- githubStar %>%
             /(max(forks_count) - min(forks_count))) * (1 - 0) + 0
         )
 
-githubStar <- githubStar %>%
-  mutate(networkCountScaled = 
-           ((network_count - min(network_count))
-            /(max(network_count) - min(network_count))) * (1 - 0) + 0
-        )
+# githubStar <- githubStar %>%
+#   mutate(networkCountScaled = 
+#            ((network_count - min(network_count))
+#             /(max(network_count) - min(network_count))) * (1 - 0) + 0
+#         )
 
 githubStar <- githubStar %>%
   mutate(suscribersCountScaled = 
@@ -48,19 +48,19 @@ githubStar <- githubStar %>%
             /(max(subscribers_count) - min(subscribers_count))) * (1 - 0) + 0
       )
 
-githubStar <- githubStar %>%
-  mutate(watchersCountScaled = 
-           ((watchers_count - min(watchers_count))
-            /(max(watchers_count) - min(watchers_count))) * (1 - 0) + 0
-      )
+# githubStar <- githubStar %>%
+#   mutate(watchersCountScaled = 
+#            ((watchers_count - min(watchers_count))
+#             /(max(watchers_count) - min(watchers_count))) * (1 - 0) + 0
+#       )
 
 githubStarMedian <- githubStar%>%
   mutate(isTarget = 
            ifelse(
-                    (starsScaled * 0.3 + forksCountScaled * 0.2 + networkCountScaled * 0.2 
-                     + suscribersCountScaled * 0.2 + watchersCountScaled * 0.1 ) >
-                     median(starsScaled * 0.3 + forksCountScaled * 0.2 + networkCountScaled * 0.2 
-                          + suscribersCountScaled * 0.2 + watchersCountScaled * 0.1),
+                    (starsScaled * 0.4 + forksCountScaled * 0.4 
+                     + suscribersCountScaled * 0.2  ) >
+                     median(starsScaled * 0.4 + forksCountScaled * 0.4
+                          + suscribersCountScaled * 0.2 ),
                         TRUE,FALSE
                   )
          )
@@ -68,10 +68,10 @@ githubStarMedian <- githubStar%>%
 githubStarMean <- githubStar%>%
   mutate(isTarget = 
            ifelse(
-             (starsScaled * 0.3 + forksCountScaled * 0.2 + networkCountScaled * 0.2 
-              + suscribersCountScaled * 0.2 + watchersCountScaled * 0.1 ) >
-               mean(starsScaled * 0.3 + forksCountScaled * 0.2 + networkCountScaled * 0.2 
-                      + suscribersCountScaled * 0.2 + watchersCountScaled * 0.1),
+             (starsScaled * 0.4 + forksCountScaled * 0.4  
+              + suscribersCountScaled * 0.2   ) >
+               mean(starsScaled * 0.4 + forksCountScaled * 0.4 
+                      + suscribersCountScaled * 0.2  ),
              TRUE,FALSE
            )
   )
