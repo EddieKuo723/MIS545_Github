@@ -58,21 +58,21 @@ githubStar <- githubStar %>%
 githubStarMedian <- githubStar%>%
   mutate(isTarget = 
            ifelse(
-                    (starsScaled * 0.3 + forksCountScaled * 0.2 + networkCountScaled * 0.2 
-                     + suscribersCountScaled * 0.2 + watchersCountScaled * 0.1 ) >
-                     median(starsScaled * 0.3 + forksCountScaled * 0.2 + networkCountScaled * 0.2 
-                          + suscribersCountScaled * 0.2 + watchersCountScaled * 0.1),
-                        TRUE,FALSE
-                  )
-         )
+             (starsScaled * 0.4 + forksCountScaled * 0.4 
+              + suscribersCountScaled * 0.2  ) >
+               median(starsScaled * 0.4 + forksCountScaled * 0.4
+                      + suscribersCountScaled * 0.2 ),
+             TRUE,FALSE
+           )
+  )
 
 githubStarMean <- githubStar%>%
   mutate(isTarget = 
            ifelse(
-             (starsScaled * 0.3 + forksCountScaled * 0.2 + networkCountScaled * 0.2 
-              + suscribersCountScaled * 0.2 + watchersCountScaled * 0.1 ) >
-               mean(starsScaled * 0.3 + forksCountScaled * 0.2 + networkCountScaled * 0.2 
-                      + suscribersCountScaled * 0.2 + watchersCountScaled * 0.1),
+             (starsScaled * 0.4 + forksCountScaled * 0.4  
+              + suscribersCountScaled * 0.2   ) >
+               mean(starsScaled * 0.4 + forksCountScaled * 0.4 
+                    + suscribersCountScaled * 0.2  ),
              TRUE,FALSE
            )
   )
