@@ -112,5 +112,5 @@ githubCorr <- githubStar %>%
 corrMat <- cor(githubCorr)
 
 # correlation matrix display
-corrplot(corrMat, method = 'number')
+corrplot(corrMat, method = 'number',type="lower")
 
