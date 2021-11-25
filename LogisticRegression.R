@@ -86,15 +86,21 @@ githubStarMean <- githubStar%>%
   )
 
 
-print(summary(githubStarMean))
-print(summary(githubStarMedian))
-
-
-
 githubStarMedian <- githubStarMedian %>% 
   select( starsScaled, forksCountScaled, 
           issueCountScaled, suscribersCountScaled,   isTarget
   )
+
+
+githubStarMedian$isTarget <- as.integer(as.logical(githubStarMedian$isTarget))
+
+print(summary(githubStarMean))
+print(summary(githubStarMedian))
+
+# Since there is no class imbalance, no need to create synthetic testing data
+
+
+
 
 
 displayAllHistograms <- function(tibbleDataset) {
@@ -118,4 +124,60 @@ githubStarMedian$suscribersCountScaled <- log10(githubStarMedian$suscribersCount
 # removing non-finite values from the dataset
 githubStarMedian <- githubStarMedian[!is.infinite(rowSums(githubStarMedian)),]
 
+sampleSet <- sample(nrow(githubStarMedian),
+                    round(nrow(githubStarMedian)*0.75),
+                    replace = FALSE
+)
+# Put 75% sample into training
+githubStarTraining  <- githubStarMedian[sampleSet, ]
 
+# Put 25% sample into testing
+githubStarTesting  <- githubStarMedian[-sampleSet, ]
+
+# Generate the model
+logRegressionModel <- glm(data = githubStarTraining,
+                        family = binomial,
+                        formula = isTarget ~ .)
+
+summary(logRegressionModel)
+
+# Calculate the odds ratios for each of the 7 independent variable coefficients
+exp(coef(logRegressionModel)["starsScaled"])
+exp(coef(logRegressionModel)["forksCountScaled"])
+exp(coef(logRegressionModel)["issueCountScaled"])
+exp(coef(logRegressionModel)["suscribersCountScaled"])
+
+# using the model to predict outcomes of testing dataset
+githubTargetPrediction <- predict(logRegressionModel,
+                                  githubStarTesting,
+                                 type = "response")
+
+# display mobilePhonePrediction in the console
+print(githubTargetPrediction)
+
+# treat anything below or equal to 0.5 as a 0, anything above 0.5 as a 1
+githubTargetPrediction <- 
+  ifelse(githubTargetPrediction >= 0.5, 1, 0)
+
+print(githubTargetPrediction)
+
+# create a confusion matrix
+githubTargetConfusionMatrix <- table(githubStarTesting$isTarget,
+                                     githubTargetPrediction)
+
+# display the confusion matrix
+print(githubTargetConfusionMatrix)
+
+# false positive rate
+githubTargetConfusionMatrix[1, 2] / (githubTargetConfusionMatrix[1, 2] +
+                                       githubTargetConfusionMatrix[1, 1])
+
+# false negative rate
+githubTargetConfusionMatrix[2, 1] / (githubTargetConfusionMatrix[2, 1] +
+                                      githubTargetConfusionMatrix[2, 2])
+
+# total predictive accuracy of the model 
+predictiveAccuracy <- sum(diag(githubTargetConfusionMatrix)) / nrow(githubStarTesting)
+
+# Display the predictive accuracy on the console
+print(predictiveAccuracy)
