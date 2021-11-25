@@ -89,13 +89,45 @@ print(summary(githubStarMean))
 print(summary(githubStarMedian))
 
 
+
+displayAllHistograms <- function(tibbleDataset) {
+  tibbleDataset %>% 
+    keep(is.numeric) %>%
+    gather() %>%
+    ggplot() + geom_histogram(mapping = aes(x=value, fill=key),
+                              color = "black") +
+    facet_wrap (~key, scales = "free") +
+    theme_minimal ()
+}
+
 githubStarMedian <- githubStarMedian %>% 
   select( starsScaled, forksCountScaled, 
           issueCountScaled, suscribersCountScaled,   isTarget
   )
 
+displayAllHistograms(githubStarMedian)
 
-set.seed(591)
+#check skewness before transforming
+skewness(githubStarMedian$forksCountScaled)
+
+# transform data to normal distribution(log transformation)
+githubStarMedian$starsScaled <- log10(githubStarMedian$starsScaled)
+githubStarMedian$forksCountScaled <- log10(githubStarMedian$forksCountScaled)
+githubStarMedian$issueCountScaled <- log10(githubStarMedian$issueCountScaled)
+githubStarMedian$suscribersCountScaled <- log10(githubStarMedian$suscribersCountScaled)
+
+#check skewness after transforming
+skewness(githubStarMedian$forksCountScaled)
+
+# summary
+summary(githubStarMedian)
+
+# removing non-finite values from the dataset
+githubStarMedian <- githubStarMedian[!is.infinite(rowSums(githubStarMedian)),]
+
+# set seed
+set.seed(568)
+
 
 sampleSet <- sample(nrow(githubStarMedian),
                     round(nrow(githubStarMedian)*0.75),
@@ -108,14 +140,16 @@ githubStarMedianTraining <- githubStarMedian[sampleSet, ]
 githubStarMedianTesting  <- githubStarMedian[-sampleSet, ]
 
 
-githubStarMedianTraining
 
 githubStarNeuralNet <- neuralnet(
   formula = isTarget ~ starsScaled + forksCountScaled 
                             + issueCountScaled + suscribersCountScaled,
   
   data = githubStarMedianTraining,
+  threshold = 0.1,
+  stepmax = 1e+6,
   hidden = 3,
+  rep = 5,
   act.fct = "logistic",
   linear.output = FALSE
 )

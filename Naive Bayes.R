@@ -92,6 +92,15 @@ githubStarMedian <- githubStarMedian %>%
                     issueCountScaled, suscribersCountScaled,   isTarget
             )
 
+
+githubStarMedian$starsScaled <- log10(githubStarMedian$starsScaled)
+githubStarMedian$forksCountScaled <- log10(githubStarMedian$forksCountScaled)
+githubStarMedian$issueCountScaled <- log10(githubStarMedian$issueCountScaled)
+githubStarMedian$suscribersCountScaled <- log10(githubStarMedian$suscribersCountScaled)
+
+# removing non-finite values from the dataset
+githubStarMedian <- githubStarMedian[!is.infinite(rowSums(githubStarMedian)),]
+
 set.seed(154)
 
 sampleSet <- sample(nrow(githubStarMedian ),

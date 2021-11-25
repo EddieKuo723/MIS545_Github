@@ -1,16 +1,16 @@
-# MIS 545 Section 02
+#Logistic Regression
 
-# Install the required packages
-# install.packages("tidyverse")
-# install.packages("rpart")
-# install.packages("rpart.plot")
+# install.packages("GlmSimulatoR")
+# loading the libraries required for this code
+library(tidyverse)
+library(olsrr)
+library(corrplot)
+library(smotefamily)
 
-library("tidyverse")
-library("rpart")
-library("rpart.plot")
-
-# Set the working directory to your Lab12 folder
-setwd("C:/Users/user/Documents/GitHub/MIS545_Github_CyberSecurity")
+library(GlmSimulatoR)
+library(ggplot2)
+library(dplyr)
+library(stats)
 
 # Read Github_most_stars.csv into a tibble called githubStar
 githubStar <- read_csv(file="Github_most_stars.csv",
@@ -37,6 +37,7 @@ githubStar <- githubStar %>%
             /(max(forks_count) - min(forks_count))) * (1 - 0) + 0
   )
 
+
 # githubStar <- githubStar %>%
 #   mutate(networkCountScaled = 
 #            ((network_count - min(network_count))
@@ -60,6 +61,7 @@ githubStar <- githubStar %>%
            ((issue_count - min(issue_count))
             /(max(issue_count) - min(issue_count))) * (1 - 0) + 0
   )
+
 
 githubStarMedian <- githubStar%>%
   mutate(isTarget = 
@@ -95,8 +97,18 @@ githubStarMedian <- githubStarMedian %>%
   )
 
 
+displayAllHistograms <- function(tibbleDataset) {
+  tibbleDataset %>% 
+    keep(is.numeric) %>%
+    gather() %>%
+    ggplot() + geom_histogram(mapping = aes(x=value, fill=key),
+                              color = "black") +
+    facet_wrap (~key, scales = "free") +
+    theme_minimal ()
+}
 
-set.seed(370)
+
+displayAllHistograms(githubStarMedian)
 
 githubStarMedian$starsScaled <- log10(githubStarMedian$starsScaled)
 githubStarMedian$forksCountScaled <- log10(githubStarMedian$forksCountScaled)
@@ -105,55 +117,5 @@ githubStarMedian$suscribersCountScaled <- log10(githubStarMedian$suscribersCount
 
 # removing non-finite values from the dataset
 githubStarMedian <- githubStarMedian[!is.infinite(rowSums(githubStarMedian)),]
-
-sampleSet <- sample(nrow(githubStarMedian),
-                    round(nrow(githubStarMedian)*0.75),
-                    replace = FALSE
-)
-# Put 75% sample into training
-githubStarTraining  <- githubStarMedian[sampleSet, ]
-
-# Put 25% sample into testing
-githubStarTesting  <- githubStarMedian[-sampleSet, ]
-
-# Generate the decision tree model to predict isTarget based
-# on the other variables in the dataset. Use 0.01 as the complexity parameter.
-githubStarModel <- rpart(formula = isTarget ~ .,
-                        method = "class",
-                        cp = 0.01,
-                        data = githubStarTraining)
-
-# Display the decision tree visualization in R
-rpart.plot(githubStarModel)
-
-
-# Predict classes for each record in the testing dataset 
-# and store them in githubStarPrediction
-githubStarPrediction <- predict(githubStarModel,
-                              githubStarTesting,
-                              type = "class")
-
-# Display riceFarmsPrediction on the console
-print(githubStarPrediction)
-
-
-# Evaluate the model by forming a confusion matrix
-githubStarConfusionMatrix <- table(githubStarTesting$isTarget,
-                                  githubStarPrediction)
-
-# Display the confusion matrix on the console
-print(githubStarConfusionMatrix)
-
-# Calculate the model prediction accuracy 
-predictiveAccuracy <-sum(diag(githubStarConfusionMatrix)
-                         /nrow(githubStarTesting))
-
-# Display the predictive accuracy on the console
-print(predictiveAccuracy)
-
-
-
-
-
 
 
