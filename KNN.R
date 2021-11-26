@@ -1,12 +1,12 @@
 #Logistic Regression
 
-# install.packages("GlmSimulatoR")
+
 # loading the libraries required for this code
 library(tidyverse)
 library(olsrr)
 library(corrplot)
 library(smotefamily)
-
+library(class)
 library(GlmSimulatoR)
 library(ggplot2)
 library(dplyr)
@@ -20,8 +20,9 @@ githubStar <- read_csv(file="Github_most_stars.csv",
 print(githubStar)
 
 # Display the structure of githubStar in the console
-# Display the summary of githubStar in the console
 print(str(githubStar))
+
+# Display the summary of githubStar in the console
 print(summary(githubStar))
 
 
@@ -92,8 +93,6 @@ githubStarMedian <- githubStarMedian %>%
   )
 
 
-githubStarMedian$isTarget <- as.integer(as.logical(githubStarMedian$isTarget))
-
 print(summary(githubStarMean))
 print(summary(githubStarMedian))
 
@@ -105,7 +104,7 @@ displayAllBoxplots <- function(tibbleDataset) {
     keep(is.numeric) %>%
     gather() %>%
     ggplot() + geom_boxplot(mapping = aes(x=value, fill=key),
-                              color = "black") +
+                            color = "black") +
     facet_wrap (~key, scales = "free") +
     theme_minimal ()
 }
@@ -115,14 +114,14 @@ displayAllHistograms <- function(tibbleDataset) {
     keep(is.numeric) %>%
     gather() %>%
     ggplot() + geom_histogram(mapping = aes(x=value, fill=key),
-                            color = "black") +
+                              color = "black") +
     facet_wrap (~key, scales = "free") +
     theme_minimal ()
 }
 
 displayAllHistograms(githubStarMedian)
 
-displayAllBoxplots(githubStar)
+displayAllBoxplots(githubStarMedian)
 
 
 githubStarMedian$starsScaled <- log10(githubStarMedian$starsScaled)
@@ -133,60 +132,96 @@ githubStarMedian$suscribersCountScaled <- log10(githubStarMedian$suscribersCount
 # removing non-finite values from the dataset
 githubStarMedian <- githubStarMedian[!is.infinite(rowSums(githubStarMedian)),]
 
+
+# separate the tibble into 2 lables only
+isTargetLabels <- githubStarMedian %>% 
+  select(isTarget)
+
+# other variables
+githubStarMedian <- githubStarMedian %>% 
+  select(-isTarget)
+
+
+
+# splitting the data and setting seed
+set.seed(777)
+
 sampleSet <- sample(nrow(githubStarMedian),
                     round(nrow(githubStarMedian)*0.75),
                     replace = FALSE
 )
 # Put 75% sample into training
 githubStarTraining  <- githubStarMedian[sampleSet, ]
+githubStarTrainingLabels <- isTargetLabels[sampleSet, ]
 
 # Put 25% sample into testing
 githubStarTesting  <- githubStarMedian[-sampleSet, ]
+githubStarTestingLabels <- isTargetLabels[-sampleSet, ]
 
-# Generate the model
-logRegressionModel <- glm(data = githubStarTraining,
-                        family = binomial,
-                        formula = isTarget ~ .)
+# generate the model
+isTargetPrediction <- knn(train = githubStarTraining,
+                           test = githubStarTesting, 
+                           cl = githubStarTrainingLabels$isTarget,
+                           k = 31)
 
-summary(logRegressionModel)
 
-# Calculate the odds ratios for each of the 7 independent variable coefficients
-exp(coef(logRegressionModel)["starsScaled"])
-exp(coef(logRegressionModel)["forksCountScaled"])
-exp(coef(logRegressionModel)["issueCountScaled"])
-exp(coef(logRegressionModel)["suscribersCountScaled"])
+# display predictions 
+print(isTargetPrediction)
 
-# using the model to predict outcomes of testing dataset
-githubTargetPrediction <- predict(logRegressionModel,
-                                  githubStarTesting,
-                                 type = "response")
+# display summary of the predictions 
+print(summary(isTargetPrediction))
 
-# display mobilePhonePrediction in the console
-print(githubTargetPrediction)
+# evaluate the model using confusion matrix
+githubTargetConfusionMatrix <- table(githubStarTestingLabels$isTarget,
+                                  isTargetPrediction)
 
-# treat anything below or equal to 0.5 as a 0, anything above 0.5 as a 1
-githubTargetPrediction <- 
-  ifelse(githubTargetPrediction >= 0.5, 1, 0)
 
-print(githubTargetPrediction)
-
-# create a confusion matrix
-githubTargetConfusionMatrix <- table(githubStarTesting$isTarget,
-                                     githubTargetPrediction)
-
-# display the confusion matrix
+# display the confusion matrix 
 print(githubTargetConfusionMatrix)
 
-# false positive rate
-githubTargetConfusionMatrix[1, 2] / (githubTargetConfusionMatrix[1, 2] +
-                                       githubTargetConfusionMatrix[1, 1])
+# calculate the accuracy
+predictiveAccuracy <- sum(diag(githubTargetConfusionMatrix)) /
+  nrow(githubStarTesting)
 
-# false negative rate
-githubTargetConfusionMatrix[2, 1] / (githubTargetConfusionMatrix[2, 1] +
-                                      githubTargetConfusionMatrix[2, 2])
 
-# total predictive accuracy of the model 
-predictiveAccuracy <- sum(diag(githubTargetConfusionMatrix)) / nrow(githubStarTesting)
-
-# Display the predictive accuracy on the console
+# print the accuracy
 print(predictiveAccuracy)
+
+# create a matrix of k-values with their predictive accuracy
+kValueMatrix <- matrix(data = NA, nrow = 0, ncol = 2)
+
+# assign column names of "k value" and "Predictive accuracy" 
+colnames(kValueMatrix) <- c("k value", "Predictive Accuracy")
+
+# loop through odd values of k from 1 up to the number of records.With 
+# each pass through the loop, store the k-value along with 
+# its predictive accuracy.
+for (kValue in 1:nrow(githubStarTraining)){
+  
+  # only calculate predictive value if the k value is odd
+  if(kValue %% 2 !=0){
+    
+    # generate the model
+    isTargetPrediction <- knn(train = githubStarTraining,
+                               test = githubStarTesting, 
+                               cl = githubStarTrainingLabels$isTarget,
+                               k = kValue)
+    
+    # generate the confusion matrix
+    githubTargetConfusionMatrix <- table(githubStarTestingLabels$isTarget,
+                                         isTargetPrediction)
+    
+    # calculate the accuracy
+    predictiveAccuracy <- sum(diag(githubTargetConfusionMatrix)) /
+      nrow(githubStarTesting)
+    
+    # add a new row to the kValueMatrix
+    kValueMatrix <- rbind(kValueMatrix, c(kValue, predictiveAccuracy))
+  }
+}
+
+# print kValueMatrix
+print(kValueMatrix)
+
+
+
